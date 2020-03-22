@@ -1,0 +1,7 @@
+# file patterns
+*.o
+*.use
+
+# build output
+*/obj/*
+

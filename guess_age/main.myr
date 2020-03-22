@@ -1,0 +1,25 @@
+/* Age guesser */
+
+use std
+
+const main = {args : byte[:][:] 
+	var cmd
+	var age : int
+
+	cmd = std.optparse(args, &[
+		.argdesc = "vals",
+	])
+
+	if args.len < 2 
+		std.put("usage: age someint\n")
+		-> void
+	;;
+
+	age = std.getv(std.intparse(cmd.args[0]), 0)
+
+	match age
+	| 123300000 + 21123:	std.put("cdc{{{}}}\n", ~ (123300000 + 21123) ^ 123)
+	| other:				std.put("What's my age?\n")
+	;;
+}
+

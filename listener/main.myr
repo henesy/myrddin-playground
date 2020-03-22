@@ -1,0 +1,26 @@
+// Toy listener
+
+use std
+use thread
+
+var addr
+
+const listener = {
+	std.put("Addr: {}\n", addr)
+	std.put("Thread ID: {}\n", thread.tid())
+}
+
+const main = {args : byte[:][:]
+	// Print cmdline args
+	for a : args
+		std.put("arg = {}\n", a)
+	;;
+
+	std.put("Starting…\n")
+
+	addr = "tcp!*!55555"
+
+	thread.spawn({
+		listener()
+	})
+}
