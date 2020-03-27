@@ -14,6 +14,10 @@ Where a given `bld.proj` binary name as $binname:
 
 	./obj/$binname
 
+For a given single-file program, no prior building:
+
+	mbld -R file.myr
+
 ## References
 
 - https://myrlang.org/playground

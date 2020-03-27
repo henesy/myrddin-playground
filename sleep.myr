@@ -1,0 +1,17 @@
+use std
+
+// Sleep for a period in milliseconds
+const sleep = {tm
+	// Convert ms ⇒ μs for usleep
+	std.usleep((tm * 1_000 : std.time))
+}
+
+// Sleep for one second between prints
+const main = {
+	std.put("a")
+	sleep(1000)
+	std.put("b")
+	std.usleep(1 * std.Sec)
+	std.put("\n")
+}
+

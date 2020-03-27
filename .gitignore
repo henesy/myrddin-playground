@@ -3,5 +3,4 @@
 *.use
 
 # build output
-*/obj/*
-
+*/obj
