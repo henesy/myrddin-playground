@@ -9,40 +9,108 @@
 use std
 use bio
 
+
 var		follow					// Watch and print further data
 var		nlines					// Number of lines to print
-var		reverse					// Reverse lines emitted
+var		out						// Buffered output
 
 
 // Emit the lines of a file from a given line
 const tail = {fd : std.fd
 	var file	= bio.mkfile(fd, bio.Rd)
 	var nnl		= 0
+	var nbytes	= 0
+	const nl	= ('\n' : byte)
+	var targl	// Line to start printing from
 
+	// Get number of newlines
 	while true
-		match bio.getc(file)
-		| `std.Ok	'\n':
+		match bio.getb(file)
+		| `std.Ok	nl:
 			nnl++
+			nbytes++
 
 		| `std.Err	`bio.Eof:
 			break
 
 		| `std.Err	err:
-			std.fatal("err: could not read rune from fd {} - {}", fd, err)
+			std.fatal("err: could not read rune from fd {} - {}\n", fd, err)
+
+		| _:
+			nbytes++
+		;;
+	;;
+
+	targl = nnl - nlines
+
+	// Silently print everything if we get a number of lines to print > existent number of lines
+	if targl < 1
+		targl = 1
+	;;
+
+	bio.seek(file, 0)
+
+	// Scan forward to position
+	var l
+	for l = 1; l <= targl; ;
+		match bio.getc(file)
+		| `std.Ok	'\n':
+			l++
+
+		| `std.Err	`bio.Eof:
+			std.fatal("err: got premature EOF on line {} going to {}\n", l, targl)
+
+		| `std.Err	err:
+			std.fatal("err: could not read rune on line {} going to {} - {}\n", l, targl, err)
 
 		| _:
 			;
 		;;
 	;;
 
+	// Emit lines to print
+	while true
+		match bio.getc(file)
+		| `std.Err	`bio.Eof:
+			break
+
+		| `std.Err	err:
+			std.fatal("err: could not read rune - {}\n", err)
+
+		| `std.Ok	c:
+			bio.putc(out, c)
+		;;
+	;;
+
+	bio.flush(out)
+
+	// Keep reading for bytes - does this even work?
+	if follow
+		while true
+			match bio.getb(file)
+			| `std.Ok	b:
+				bio.putb(out, b)
+
+			| `std.Err	`bio.Eof:
+				// Here, we purposefully ignore EOF
+				;
+
+			| `std.Err	err:
+				std.fatal("err: could not follow read rune from fd {} - {}\n", fd, err)
+			;;
+		;;
+	;;
+
+	// Clean up
 	bio.close(file)
+	std.close(fd)
+	bio.flush(out)
 }
 
 
 // Something vaguely tail(1) in Myrddin
 const main = {args : byte[:][:]
 	var cmd
-	reverse	= false
 	nlines	= 10
 	follow	= false
 
@@ -51,7 +119,6 @@ const main = {args : byte[:][:]
 		.argdesc = "[file …]",
 		.opts = [
 			[.opt='f',						.desc = "watch and print further data"],
-			[.opt='r',						.desc = "reverse lines emitted"],
 			[.opt='n',	.arg = "nlines",	.desc = "emit 'nlines' number of lines"],
 		][:]
 	])
@@ -60,19 +127,23 @@ const main = {args : byte[:][:]
 		match opt
 		| ('f', ""):
 			follow = true
-		| ('r', ""):
-			reverse = true
 		| ('n', arg):
 			match std.intparse(arg)
 			| `std.Some v:
+				if v < 1
+					std.fatal("err: lines 'nlines' must be ≥ 1, was {}\n", v)
+				;;
+
 				nlines = v
 			| `std.None:
-				std.fatal("err: invalid argument for nlines")
+				std.fatal("err: invalid argument for nlines\n")
 			;;
 		| _:
 			std.fatal("unreachable\n")
 		;;
 	;;
+
+	out = bio.mkfile((1 : std.fd), bio.Wr)
 
 	match cmd.args.len
 	| 0:
@@ -91,4 +162,6 @@ const main = {args : byte[:][:]
 			;;
 		;;
 	;;
+
+	bio.close(out)
 }
