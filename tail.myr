@@ -1,0 +1,94 @@
+// A naive tail(1)-like implementation
+
+/*
+	1. Scan forward to count all the \n runes until EOF
+	2. Scan forward to n - m line where n is the number of lines in the file and m is the number of lines to print
+	3. From the n - m line, print every line until EOF
+*/
+
+use std
+use bio
+
+var		follow					// Watch and print further data
+var		nlines					// Number of lines to print
+var		reverse					// Reverse lines emitted
+
+
+// Emit the lines of a file from a given line
+const tail = {fd : std.fd
+	var file	= bio.mkfile(fd, bio.Rd)
+	var nnl		= 0
+
+	while true
+		match bio.getc(file)
+		| `std.Ok	'\n':
+			nnl++
+
+		| `std.Err	`bio.Eof:
+			break
+
+		| `std.Err	err:
+			std.fatal("err: could not read rune from fd {} - {}", fd, err)
+
+		| _:
+			;
+		;;
+	;;
+
+	bio.close(file)
+}
+
+
+// Something vaguely tail(1) in Myrddin
+const main = {args : byte[:][:]
+	var cmd
+	reverse	= false
+	nlines	= 10
+	follow	= false
+
+	// Commandline argument parsing
+	cmd = std.optparse(args, &[
+		.argdesc = "[file …]",
+		.opts = [
+			[.opt='f',						.desc = "watch and print further data"],
+			[.opt='r',						.desc = "reverse lines emitted"],
+			[.opt='n',	.arg = "nlines",	.desc = "emit 'nlines' number of lines"],
+		][:]
+	])
+
+	for opt : cmd.opts
+		match opt
+		| ('f', ""):
+			follow = true
+		| ('r', ""):
+			reverse = true
+		| ('n', arg):
+			match std.intparse(arg)
+			| `std.Some v:
+				nlines = v
+			| `std.None:
+				std.fatal("err: invalid argument for nlines")
+			;;
+		| _:
+			std.fatal("unreachable\n")
+		;;
+	;;
+
+	match cmd.args.len
+	| 0:
+		// Read from stdin if no [file] is specified
+		tail((0 : std.fd))
+
+	| _:
+		// For each [file …] argument
+		for file : cmd.args
+			match std.open(file, std.Oread)
+			| `std.Ok	fd:
+				tail(fd)
+
+			| `std.Err	err:
+				std.fatal("err: could not open {} - {}\n", file, err)
+			;;
+		;;
+	;;
+}
