@@ -1,0 +1,92 @@
+// A naive plan9 tail(1)-like implementation
+
+use std
+use bio
+
+
+var		follow					// Watch and print further data
+var		nlines					// Number of lines to print
+var		out						// Buffered output
+
+
+// Print usage information
+const usage = {
+	std.fput(1, "usage: tail [+-number[lbr]] [-f] [ file… ]\n")
+	std.fatal("")
+}
+
+// Emit the lines of a file from a given line
+const tail = {fd : std.fd
+	var file	= bio.mkfile(fd, bio.Rd)
+	var nnl		= 0
+	var nbytes	= 0
+	const nl	= ('\n' : byte)
+	var targl : int	// Line to start printing from
+
+
+
+
+	// Clean up
+	bio.close(file)
+	std.close(fd)
+	bio.flush(out)
+}
+
+
+// Something vaguely tail(1) in Myrddin
+const main = {argv : byte[:][:]
+	nlines	= 10
+	follow	= false
+
+	// Commandline argument processing
+	var i
+	for i = 1; i < argv.len; i++
+		match argv[i]
+		| "-h":
+			usage()
+		| "-f":
+			follow = true
+		| "--":
+			// Known end to arguments
+			i++
+			break
+		| _:
+			if (argv[i][0] : char) != ('-' : char) && (argv[i][0] : char) != ('+' : char)
+				// Found a non-flag argument
+				break
+			;;
+
+			// Handle -n[lbr] args
+			// line, byte, rune ; line is the default
+
+		;;
+
+		std.put("→ {}\n", argv[i])
+	;;
+
+	var args = argv[i:]
+
+	std.put("len = {}\n", args.len)
+
+	out = bio.mkfile((1 : std.fd), bio.Wr)
+
+	match args.len
+	| 0:
+		// Read from stdin if no [file] is specified
+		tail((0 : std.fd))
+
+	| _:
+		// For each [file …] argument
+		for file : args
+			match std.open(file, std.Oread)
+			| `std.Ok	fd:
+				tail(fd)
+
+			| `std.Err	err:
+				std.fatal("err: could not open {} - {}\n", file, err)
+			;;
+		;;
+	;;
+
+	bio.close(out)
+}
