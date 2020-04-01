@@ -1,0 +1,51 @@
+// Compute a target n'th fibonacci number
+
+use std
+
+const usage = {
+	std.fatal("usage: fib n")
+}
+
+var target : uint64
+var i : uint64
+
+const main = {args : byte[:][:]
+	if args.len != 2
+		usage()
+	;;
+
+	match std.intparse(args[1])
+	| `std.Some	v:
+		target = v
+	| `std.None:
+		std.fatal("err: invalid number for n\n")
+	;;
+
+	std.put("crunching for {}'th fibonacci…\n", target)
+
+	var result : uint64
+
+	match target
+	| 0:
+		std.fatal("err: n'th fibonacci starts from 1\n")
+	| 1:
+		result = 0
+	| 2:
+		result = 1
+	| _:
+		i = 2
+		result = fib(0, 1)
+	;;
+
+	std.put("{}\n", result)
+}
+
+const fib = {last : uint64, n : uint64
+	if i-1 == target
+		-> last
+	else
+		i++
+		-> fib(n, last + n)
+	;;
+}
+
