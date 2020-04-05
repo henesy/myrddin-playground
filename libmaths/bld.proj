@@ -1,0 +1,12 @@
+## Misc maths functions implemented in Myrddin
+
+# Library
+lib maths =
+	maths.myr
+;;
+
+# Tests
+test tests =
+	test.myr
+	lib maths
+;;

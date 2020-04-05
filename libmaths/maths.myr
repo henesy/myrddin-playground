@@ -1,0 +1,24 @@
+/*
+	Misc maths functions
+*/
+
+
+pkg maths =
+	generic lerp	: (a : @f, b : @f, t : @f -> @f)	:: numeric,floating	@f
+	generic max		: (a : @t, b : @t -> @t)			:: numeric			@t
+;;
+
+
+// Computes linear interpolation
+generic lerp = {a : @f, b : @f, t : @f	:: numeric,floating @f
+	-> a + t * (b - a)
+}
+
+// Maximum of two numeric types
+generic max = {a : @t, b : @t	:: numeric @t
+    if a > b
+        -> a
+    else
+        -> b
+    ;;
+}

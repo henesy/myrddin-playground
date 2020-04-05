@@ -1,0 +1,9 @@
+use std
+use maths
+
+// Test maths functions
+const main = {
+	std.assert(maths.lerp(10.0, 5.0, 3.0) == -5.0, "lerp() failed\n")
+	
+	std.assert(maths.max(5, 3) == 5, "max() failed\n")
+}
