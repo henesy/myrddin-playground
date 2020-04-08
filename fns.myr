@@ -1,0 +1,18 @@
+use std
+
+// Takes double() as an argument
+const four = {doubler : (x : int -> int)
+	-> doubler(2)
+}
+
+const double = {x
+	-> 2 * x
+}
+
+const main = {
+	var n = 2
+	std.put("4 ⇔ {}\n", double(n))
+
+	std.put("4 ⇔ {}\n", four(double))
+}
+
