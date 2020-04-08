@@ -1,0 +1,125 @@
+use std
+
+const evens = {str : byte[:]
+	var even = true
+	for r : str
+		match even
+		| true:
+			std.put("{} ", (r : char))
+			even = false
+		| false:
+			even = true
+		;;
+	;;
+	std.put("\n")
+}
+
+var odds = {arr : int[:]
+	var even = false
+	for n : arr
+		match even
+		| true:
+			even = false
+		| false:
+			std.put("{} ", n)
+			even = true
+		;;
+	;;
+	std.put("\n")
+}
+
+const main = {
+	/* Stack stuff */
+
+	// Created as a slice
+	var name = "george"
+
+	evens(name)
+
+	// Created as an array
+	var nums : int[6]
+	for i = 0; i < nums.len; i++
+		nums[i] = (i+1) * (i+1) + i
+	;;
+
+	// Create slice on top of array to pass in as slice
+	odds(nums[:])
+
+	/* Heap stuff */
+
+	var friend : byte[:]
+	friend = std.slalloc(4)
+
+	var sean = "sean"
+	std.slcp(friend, sean)
+	
+	std.put("{} has friend {} as per {}\n", name, sean, friend)
+
+	if std.sleq(sean, friend)
+		std.put("s = f\n")
+		evens(sean)
+	else
+		std.put("s ≠ f\n")
+		evens(friend)
+	;;
+
+	std.slfree(friend)
+
+	var sevens : int[:]
+	sevens = std.slzalloc(10)
+	
+	sevens = std.slfill(sevens, 7)
+	odds(sevens)
+
+	std.slfree(sevens)
+
+	// Allocates nothing, but puts dqxi on the heap
+	var dqxi : byte[:]
+	dqxi = std.slzalloc(0)
+
+	// Grow the space needed on the 0-length heap'd slice
+	dqxi = std.slzgrow(&dqxi, name.len)
+
+	std.slcp(dqxi, name)
+	std.put("dqxi = {}\n", dqxi)
+
+	var george = std.sldup(dqxi)
+	std.put("george = {}\n", george)
+
+	// Keep our george up to date
+	george = std.sljoin(&george, dqxi)
+	std.put("twice the george = {}\n", george)
+
+	std.put("friedo name is {}\n", dqxi)
+
+	std.slfree(george)
+	std.slfree(dqxi)
+
+	var counting : int[:]
+	counting = std.slalloc(0)
+
+	var i
+	for i = 0; i < 20; i++
+		counting = std.slpush(&counting, i)
+	;;
+
+	odds(counting)
+
+	i = counting.len
+	while counting.len > 0
+		i--
+		var n : int
+		n = std.slpop(&counting)
+		
+		if i % 2 != 0
+			continue
+		;;
+
+		std.put("{} ", n)
+	;;
+	std.put("\n")
+
+	std.slfree(counting)
+}
+
+
