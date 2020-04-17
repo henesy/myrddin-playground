@@ -1,0 +1,27 @@
+use std
+
+type states = union
+`Whitespace
+`Word		std.strbuf#
+;;
+
+// Show usage of stringbuilder with a tagged union
+const main = {
+	var state = `Word std.mksb()
+
+	match state
+	| `Word	buf:
+		std.sbputc(buf, 'a')
+		std.sbputc(buf, 'b')
+	| _:
+		;
+	;;
+
+	match state
+	| `Word buf:
+		std.put("{}\n", std.sbfin(buf))
+	| _:
+		;
+	;;
+}
+
